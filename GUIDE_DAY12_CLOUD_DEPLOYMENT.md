@@ -78,16 +78,16 @@ Mock LLM đã được cung cấp sẵn nên **không cần OpenAI API key**.
 
 # 2. Các checkpoint và điểm số
 
-| Checkpoint | Nội dung | File chính | Điểm |
-|---|---|---|---:|
-| CP0 | Setup môi trường | môi trường local | — |
-| CP1 | 12-Factor Config, Health, Logging | `config.py`, `logging_utils.py`, `main.py` | 15 |
-| CP2 | Docker production-ready | `Dockerfile`, `.dockerignore`, `docker-compose.yml` | 15 |
-| CP3 | Authentication, Rate Limit, Cost Guard | `auth.py`, `rate_limiter.py`, `cost_guard.py`, `main.py` | 20 |
-| CP4 | Stateless, Readiness, Graceful Shutdown | `store.py`, `lifecycle.py`, `main.py` | 20 |
-| CP5 | Deploy cloud thật | `DEPLOYMENT.md` | 15 |
-| Exercises | 10 câu phản ánh | `exercises.md` | 15 |
-| BONUS | GitHub Actions CI/CD | `.github/workflows/ci.yml` | +10 |
+| Checkpoint | Nội dung                                | File chính                                               | Điểm |
+| ---------- | --------------------------------------- | -------------------------------------------------------- | ---: |
+| CP0        | Setup môi trường                        | môi trường local                                         |    — |
+| CP1        | 12-Factor Config, Health, Logging       | `config.py`, `logging_utils.py`, `main.py`               |   15 |
+| CP2        | Docker production-ready                 | `Dockerfile`, `.dockerignore`, `docker-compose.yml`      |   15 |
+| CP3        | Authentication, Rate Limit, Cost Guard  | `auth.py`, `rate_limiter.py`, `cost_guard.py`, `main.py` |   20 |
+| CP4        | Stateless, Readiness, Graceful Shutdown | `store.py`, `lifecycle.py`, `main.py`                    |   20 |
+| CP5        | Deploy cloud thật                       | `DEPLOYMENT.md`                                          |   15 |
+| Exercises  | 10 câu phản ánh                         | `exercises.md`                                           |   15 |
+| BONUS      | GitHub Actions CI/CD                    | `.github/workflows/ci.yml`                               |  +10 |
 
 Lệnh kiểm tra tổng:
 
@@ -298,10 +298,10 @@ flowchart LR
     D -->|"Không"| R503["503 not ready"]
 ```
 
-| Endpoint | Loại probe | Kiểm tra Redis? | Ý nghĩa |
-|---|---|---:|---|
-| `/health` | Liveness | Không | Process có còn sống không? |
-| `/ready` | Readiness | Có | Instance có sẵn sàng nhận traffic không? |
+| Endpoint  | Loại probe | Kiểm tra Redis? | Ý nghĩa                                  |
+| --------- | ---------- | --------------: | ---------------------------------------- |
+| `/health` | Liveness   |           Không | Process có còn sống không?               |
+| `/ready`  | Readiness  |              Có | Instance có sẵn sàng nhận traffic không? |
 
 Không nên biến `/health` thành endpoint kiểm tra Redis. Nếu Redis lỗi tạm thời và `/health` cũng trả lỗi, orchestrator có thể restart tất cả application instance trong khi bản thân process vẫn hoàn toàn khỏe.
 
@@ -543,7 +543,13 @@ def log_event(event: str, level: str = "info", **fields) -> str:
 Ví dụ output:
 
 ```json
-{"event":"ask_completed","level":"info","timestamp":"2026-08-10T03:30:00+00:00","user_id":"sv01","cost_usd":0.0001}
+{
+  "event": "ask_completed",
+  "level": "info",
+  "timestamp": "2026-08-10T03:30:00+00:00",
+  "user_id": "sv01",
+  "cost_usd": 0.0001
+}
 ```
 
 Không dùng:
@@ -851,7 +857,7 @@ services:
           "CMD",
           "python",
           "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()"
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()",
         ]
       interval: 30s
       timeout: 5s
@@ -2445,14 +2451,14 @@ flowchart TD
     DEP -->|"Có"| E200["200 OK"]
 ```
 
-| Code | Ý nghĩa trong lab |
-|---:|---|
-| 200 | request thành công |
-| 401 | API key thiếu/sai |
-| 402 | vượt budget |
-| 422 | body validation lỗi |
-| 429 | vượt rate limit |
-| 503 | không ready hoặc shutting down |
+| Code | Ý nghĩa trong lab              |
+| ---: | ------------------------------ |
+|  200 | request thành công             |
+|  401 | API key thiếu/sai              |
+|  402 | vượt budget                    |
+|  422 | body validation lỗi            |
+|  429 | vượt rate limit                |
+|  503 | không ready hoặc shutting down |
 
 ---
 
@@ -2593,20 +2599,20 @@ docker compose down -v
 
 # 19. Debug theo triệu chứng
 
-| Triệu chứng | Nguyên nhân thường gặp | Cách xử lý |
-|---|---|---|
-| `ValidationError: agent_api_key Field required` | thiếu `.env` hoặc `AGENT_API_KEY` | tạo `.env`, set key |
-| `Connection refused Redis` | Redis chưa chạy | `docker compose up -d redis` |
-| `ModuleNotFoundError: app` | chạy test sai thư mục | chạy từ root repo |
-| Container start rồi stop | env/config lỗi | `docker compose logs agent` |
-| Curl container fail | bind `127.0.0.1` | dùng `0.0.0.0` |
-| Image > 500 MB | base image nặng / một stage | slim + multi-stage |
-| Build không cache | `COPY . .` quá sớm | requirements trước source |
-| 429 quá sớm | add request trước count | count trước, add sau |
-| `/ready` luôn 200 | không dùng `ping()` | check `store.ping()` |
-| `/ready` 503 trên cloud | `REDIS_URL` sai | kiểm tra env/dashboard |
-| Cloud health timeout | không đọc `$PORT` | `${PORT:-8000}` |
-| Secret xuất hiện trong Git | `.env` từng được add | remove tracking + rotate key |
+| Triệu chứng                                     | Nguyên nhân thường gặp            | Cách xử lý                   |
+| ----------------------------------------------- | --------------------------------- | ---------------------------- |
+| `ValidationError: agent_api_key Field required` | thiếu `.env` hoặc `AGENT_API_KEY` | tạo `.env`, set key          |
+| `Connection refused Redis`                      | Redis chưa chạy                   | `docker compose up -d redis` |
+| `ModuleNotFoundError: app`                      | chạy test sai thư mục             | chạy từ root repo            |
+| Container start rồi stop                        | env/config lỗi                    | `docker compose logs agent`  |
+| Curl container fail                             | bind `127.0.0.1`                  | dùng `0.0.0.0`               |
+| Image > 500 MB                                  | base image nặng / một stage       | slim + multi-stage           |
+| Build không cache                               | `COPY . .` quá sớm                | requirements trước source    |
+| 429 quá sớm                                     | add request trước count           | count trước, add sau         |
+| `/ready` luôn 200                               | không dùng `ping()`               | check `store.ping()`         |
+| `/ready` 503 trên cloud                         | `REDIS_URL` sai                   | kiểm tra env/dashboard       |
+| Cloud health timeout                            | không đọc `$PORT`                 | `${PORT:-8000}`              |
+| Secret xuất hiện trong Git                      | `.env` từng được add              | remove tracking + rotate key |
 
 ---
 
